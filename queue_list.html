@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="th">
+<head>
+    <meta charset="utf-8">
+    <title>คิวรอผู้ป่วย</title>
+
+    {% load static %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/queue.css' %}">
+</head>
+<body>
+
+<!-- Top bar -->
+<header class="topbar">
+    <div class="logo">
+    <a href="{% url 'queue_list' %}" class="home-link">
+        🏥 ระบบจัดการคิวโรงพยาบาล
+    </a>
+  </div>
+
+    <div class="nav">
+        <a href="/patients/register/">+ ลงทะเบียนผู้ป่วย</a>
+        <a href="/accounts/dashboard/">Dashboard</a>
+    </div>
+</header>
+
+<main class="container">
+
+    <h2>⏳ คิวรอ (Waiting Queue)</h2>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Visit</th>
+                    <th>ชื่อผู้ป่วย</th>
+                    <th>ระดับ</th>
+                    <th>AI</th>
+                    <th>เวลาลงทะเบียน</th>
+                    <th>จัดการ</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for q in q_items %}
+                <tr class="severity-{{ q.visit.final_severity|lower }}">
+                    <td>#{{ q.visit.id }}</td>
+
+                    <td>
+                        {{ q.visit.patient.first_name }}
+                        {{ q.visit.patient.last_name }}
+                    </td>
+
+                    <td>
+                        <span class="badge {{ q.visit.final_severity|lower }}">
+                            {{ q.visit.final_severity }}
+                        </span>
+                    </td>
+
+                    <td>
+                        {% if q.visit.triage_result %}
+                            {{ q.visit.triage_result.ai_severity }}
+                            {% if q.visit.triage_result.confidence %}
+                                ({{ q.visit.triage_result.confidence }})
+                            {% endif %}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {{ q.visit.registered_at|date:"H:i" }}
+                    </td>
+
+                    <td class="actions">
+                        <!-- คัดกรอง -->
+                        <form method="post" action="{% url 'triage_visit' q.visit.id %}">
+                            {% csrf_token %}
+                            <select name="severity">
+                                <option value="GREEN"  {% if q.visit.final_severity == "GREEN" %}selected{% endif %}>เขียว</option>
+                                <option value="YELLOW" {% if q.visit.final_severity == "YELLOW" %}selected{% endif %}>เหลือง</option>
+                                <option value="RED"    {% if q.visit.final_severity == "RED" %}selected{% endif %}>แดง</option>
+                            </select>
+                            <button class="btn small">คัดกรอง</button>
+                        </form>
+
+                        <!-- เรียกคิว -->
+                        <form method="post" action="{% url 'call_visit' q.visit.id %}">
+                            {% csrf_token %}
+                            <button class="btn call">เรียกคิว</button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" class="empty">ไม่มีคิวรอ</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</main>
+
+</body>
+</html>
