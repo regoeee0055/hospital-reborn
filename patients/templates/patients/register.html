@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="th">
+<head>
+    <meta charset="utf-8">
+    <title>ลงทะเบียนผู้ป่วย</title>
+
+    {% load static %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/register.css' %}">
+</head>
+<body>
+
+<!-- Top bar -->
+<header class="topbar">
+    <div class="logo">
+        <a href="{% url 'queue_list' %}" class="home-link">
+            🏥 ระบบจัดการคิวโรงพยาบาล
+        </a>
+    </div>
+
+    <div class="nav">
+        <a href="{% url 'queue_list' %}">คิวรอ</a>
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+    </div>
+</header>
+
+<main class="container">
+
+    <h2>📝 ลงทะเบียนผู้ป่วย & เปิด Visit</h2>
+    <p class="subtitle">กรอกข้อมูลให้ครบก่อนส่งเข้าคิว</p>
+
+    <form method="post" class="card">
+        {% csrf_token %}
+
+        <section class="section">
+            <h3>ข้อมูลผู้ป่วย</h3>
+            {{ patient_form.as_p }}
+        </section>
+
+        <section class="section">
+            <h3>สัญญาณชีพ</h3>
+            {{ vital_form.as_p }}
+        </section>
+
+        <div class="actions">
+            <button type="submit" class="btn primary">
+                บันทึกและเข้าคิว
+            </button>
+
+            <a href="{% url 'queue_list' %}" class="btn secondary">
+                ← กลับหน้าคิวรอ
+            </a>
+        </div>
+    </form>
+
+</main>
+
+</body>
+</html>
